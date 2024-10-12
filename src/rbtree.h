@@ -15,8 +15,11 @@ typedef struct node_t {
 
 typedef struct {
   node_t *root;
-  node_t *nil;  // for sentinel
+  node_t *nil; // for sentinel
 } rbtree;
+
+void left_rotate(rbtree *t, node_t *x);
+void right_rotate(rbtree *t, node_t *x);
 
 rbtree *new_rbtree(void);
 void delete_rbtree(rbtree *);
@@ -29,4 +32,4 @@ int rbtree_erase(rbtree *, node_t *);
 
 int rbtree_to_array(const rbtree *, key_t *, const size_t);
 
-#endif  // _RBTREE_H_
+#endif // _RBTREE_H_
