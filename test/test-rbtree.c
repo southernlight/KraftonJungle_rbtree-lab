@@ -6,6 +6,70 @@
 
 #define SENTINEL
 
+void print_tree(rbtree *t, node_t *node, int depth) {
+    if (node == t->nil) return; // nil 노드일 경우 종료
+
+    // 오른쪽 서브트리 출력
+    print_tree(t, node->right, depth + 1);
+
+    // 현재 노드 출력
+    for (int i = 0; i < depth; i++) printf("    "); // 깊이만큼 들여쓰기
+    printf("key: %d, color: %s\n", node->key, (node->color == RBTREE_RED ? "RED" : "BLACK"));
+
+    // 왼쪽 서브트리 출력
+    print_tree(t, node->left, depth + 1);
+}
+
+typedef struct Queue {
+    node_t *data;
+    struct Queue *next;
+} Queue;
+
+// 큐의 삽입 및 제거 함수
+void enqueue(Queue **head, node_t *n) {
+    Queue *newNode = (Queue*)malloc(sizeof(Queue));
+    newNode->data = n;
+    newNode->next = NULL;
+    if (*head == NULL) {
+        *head = newNode;
+    } else {
+        Queue *cur = *head;
+        while (cur->next != NULL) cur = cur->next;
+        cur->next = newNode;
+    }
+}
+
+node_t *dequeue(Queue **head) {
+    if (*head == NULL) return NULL;
+    Queue *temp = *head;
+    *head = (*head)->next;
+    node_t *n = temp->data;
+    free(temp);
+    return n;
+}
+
+void print_level_order(const rbtree *t) {
+    Queue *queue = NULL;
+    enqueue(&queue, t->root);
+
+    while (queue != NULL) {
+        node_t *n = dequeue(&queue);
+
+        if (n == t->nil) continue;
+
+        // 노드의 정보 출력 (key, 색상)
+        printf("key: %d, color: %s, parent: %d\n", 
+               n->key, 
+               n->color ? "RED" : "BLACK", 
+               n->parent == t->nil ? -1 : n->parent->key);
+
+        // 좌우 자식 노드를 큐에 삽입
+        enqueue(&queue, n->left);
+        enqueue(&queue, n->right);
+    }
+}
+
+
 // new_rbtree should return rbtree struct with null root node
 void test_init(void) {
   rbtree *t = new_rbtree();
@@ -26,7 +90,7 @@ void test_insert_single(const key_t key) {
   assert(p != NULL);
   assert(t->root == p);
   assert(p->key == key);
-  // assert(p->color == RBTREE_BLACK);  // color of root node should be black
+  //assert(p->color == RBTREE_BLACK);  // color of root node should be black
 #ifdef SENTINEL
   assert(p->left == t->nil);
   assert(p->right == t->nil);
@@ -100,6 +164,7 @@ void test_minmax(key_t *arr, const size_t n) {
   assert(t != NULL);
 
   insert_arr(t, arr, n);
+  
   assert(t->root != NULL);
 #ifdef SENTINEL
   assert(t->root != t->nil);
@@ -113,6 +178,7 @@ void test_minmax(key_t *arr, const size_t n) {
   node_t *q = rbtree_max(t);
   assert(q != NULL);
   assert(q->key == arr[n - 1]);
+
 
   rbtree_erase(t, p);
   p = rbtree_min(t);
@@ -371,15 +437,15 @@ void test_find_erase_rand(const size_t n, const unsigned int seed) {
 
 int main(void) {
   test_init();
-  // test_insert_single(1024);
-  // test_find_single(512, 1024);
-  // test_erase_root(128);
-  // test_find_erase_fixed();
-  // test_minmax_suite();
-  // test_to_array_suite();
-  // test_distinct_values();
-  // test_duplicate_values();
-  // test_multi_instance();
-  // test_find_erase_rand(10000, 17);
+  test_insert_single(1024);
+  test_find_single(512, 1024);
+  test_erase_root(128);
+  test_find_erase_fixed();
+  test_minmax_suite();
+  test_to_array_suite();
+  test_distinct_values();
+  test_duplicate_values();
+  test_multi_instance();
+  test_find_erase_rand(10000, 17);
   printf("Passed all tests!\n");
 }
